@@ -1,0 +1,68 @@
+Parameters:
+  Environment:
+    Description: "application enironment"
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - test
+      - stage
+      - prod 
+
+
+Mappings:
+  AMIIDS:
+    us-east-1:
+      linux: "ami-026b57f3c383c2eec"
+    us-west-2:
+      linux: "ami-08e2d37b6a0129927"
+    eu-west-1: 
+      linux: "ami-0ea0f26a6d50850c5"
+
+  KeyBasedOnEnv:
+    dev:
+      key: 'dev-key'
+    test:
+      key: 'tst-key'
+    stage:
+      key: 'stage-key'
+    prod:
+      key: 'prod-key'
+
+Resources:
+  MyEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties: 
+      InstanceType: t2.micro
+      ImageId:  !FindInMap [AIMIDS, !Ref "AWS::Region", linux]
+      KeyName:  !FindInMap [KeyBasedOnEnv, !Ref Environment, key]
+      BlockDeviceMappings: 
+      - DeviceName: "/dev/xvda"
+        Ebs: 
+          VolumeType: "io1"
+          Iops: "100"
+          DeleteOnTermination: "true"
+          VolumeSize: "8"
+      SecurityGroupIds:
+        - !Ref InstanceSecurityGroup 
+
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http to client host
+      VpcId: vpc-0fd59138e493b4b30
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  invoicefile:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: "joelbucketcloudformation"

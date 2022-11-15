@@ -1,0 +1,8 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation template for s3 bucket     
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket    
+    Properties:
+      BucketName: joel-demo-05-10-22-demo
+      AccessControl: PublicRead
